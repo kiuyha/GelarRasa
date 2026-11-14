@@ -34,7 +34,6 @@ export function createShell(features: readonly Feature[], onNavigate: (feature: 
   brandRow.append(brand, collapse);
   const navigation = element('nav', 'navigation');
   navigation.setAttribute('aria-label', 'Bagian dashboard');
-  const navigationHeading = element('p', 'nav-caption', 'ANALISIS');
   const navButtons = new Map<string, HTMLAnchorElement>();
   const main = element('main', 'main-content');
   main.id = 'dashboard-content';
@@ -84,8 +83,8 @@ export function createShell(features: readonly Feature[], onNavigate: (feature: 
   const logo = element('div', 'competition-brand');
   logo.append(image('../assets/Logo GELAR RASA Open.png', 'Gelar Rasa 2026', 'competition-logo'), image('../assets/Logo GELAR RASA Closed.png', 'Gelar Rasa 2026', 'competition-logo-compact'));
   const sidebarBottom = element('div', 'sidebar-bottom');
-  sidebarBottom.append(element('p', 'sidebar-context', 'Kualitas udara.\nKesehatan bersama.'), logo);
-  sidebar.append(brandRow, navigationHeading, navigation, sidebarBottom);
+  sidebarBottom.append(element('p', 'sidebar-context', 'Cerdas Membaca Udara,\nBijak Menjaga Raga.'), logo);
+  sidebar.append(brandRow, navigation, sidebarBottom);
   const workspace = element('div', 'workspace');
   const appHeader = element('header', 'app-header');
   const topbar = element('div', 'topbar');
@@ -93,7 +92,7 @@ export function createShell(features: readonly Feature[], onNavigate: (feature: 
   const ticker = createFactTicker();
   tickerHost.append(ticker.root);
   const titleArea = element('div', 'topbar-title');
-  titleArea.append(element('p', 'eyebrow', 'PRANA: SISTEM PEMANTAUAN KUALITAS UDARA NASIONAL'), element('h1', 'application-title', APPLICATION_TITLE));
+  titleArea.append(element('p', 'eyebrow', 'PRANA: Pollution, Respiratory & Atmospheric Network Analytics'), element('h1', 'application-title', APPLICATION_TITLE));
   const actions = element('div', 'topbar-actions');
   const theme = createThemeControl();
   const methodology = button('', 'button methodology-button');
