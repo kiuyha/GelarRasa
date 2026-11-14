@@ -1,6 +1,7 @@
 import { quantile } from '../../shared/admissions';
 import { POLLUTANT_KEYS } from './types';
 import type { HealthData, HealthStation, PollutantKey, Series } from './types';
+import { json as cachedJson } from '../../data/load';
 
 function record(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Struktur ekspor kesehatan tidak valid.');
@@ -81,23 +82,21 @@ export function parseHealth(rawOutcomes: unknown, rawExposure: unknown): HealthD
   return { dates, stations, discrepancies: numeric(outcomes['resp_discrepancies']) };
 }
 let cached: HealthData | null = null;
+let flight: Promise<HealthData> | null = null;
 export async function loadHealth(signal: AbortSignal): Promise<HealthData> {
   if (cached) return cached;
-  const request = new AbortController();
-  const combined = AbortSignal.any([signal, request.signal]);
-  const get = async (file: string): Promise<unknown> => {
-    const response = await fetch(`./data/${file}`, { signal: combined });
-    if (!response.ok) throw new Error(`Ekspor kesehatan tidak tersedia (${response.status}).`);
-    return response.json();
-  };
-  try {
-    const [outcomes, exposure, lag] = await Promise.all([get('health_outcomes.json'), get('health_exposure.json'), get('health_lag.json')]);
-    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-    const parsed = parseHealth(outcomes, exposure);
-    validateHealthLag(parsed, lag);
-    cached = parsed;
-    return cached;
-  } finally { request.abort(); }
+  if (flight) return flight;
+  flight = loadOnce(signal);
+  try { return await flight; } finally { flight = null; }
+}
+async function loadOnce(signal: AbortSignal): Promise<HealthData> {
+  const get = (file: string): Promise<unknown> => cachedJson(`./data/${file}`, signal);
+  const [outcomes, exposure, lag] = await Promise.all([get('health_outcomes.json'), get('health_exposure.json'), get('health_lag.json')]);
+  if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+  const parsed = parseHealth(outcomes, exposure);
+  validateHealthLag(parsed, lag);
+  cached = parsed;
+  return cached;
 }
 
 export function validateHealthLag(data: HealthData, value: unknown): void {
